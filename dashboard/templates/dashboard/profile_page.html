@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>profile</title>
+  </head>
+  <body>
+    <a href="{% url 'dashboard' %}">🏠 Trang chủ</a>
+    <h1>profile</h1>
+    <p>username: {{account.username}}</p>
+    <p>password: {{account.password}}</p>
+    <p>role: {{account.role}}</p>
+    <p>status: {{account.status}}</p>
+    <p>fulle name: {{account.accountprofile.fullname}}</p>
+    <p>date of birth: {{account.accountprofile.date_of_birth}}</p>
+    <p>email: {{account.accountprofile.email}}</p>
+    <p>phone number: {{account.accountprofile.phone_number}}</p>
+    {% load humanize %}
+    <p>Số dư: {{ account.wallet.balance|floatformat:0|intcomma }} đ</p>
+    <br>
+    <br>
+
+  </body>
+</html>

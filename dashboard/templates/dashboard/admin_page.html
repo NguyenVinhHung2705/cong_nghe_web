@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trang quản trị</title>
+
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: #f5f7fa;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        max-width: 100%;
+        max-height: 100vh;
+        margin: 60px auto;
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      /* TAB BUTTON */
+      .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #ddd;
+      }
+
+      .tab-btn {
+        padding: 12px 20px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-size: 16px;
+        font-weight: bold;
+        color: #555;
+      }
+
+      .tab-btn.active {
+        color: #4f46e5;
+        border-bottom: 3px solid #4f46e5;
+      }
+
+      /* TAB CONTENT */
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+      /* OVERLAY */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      /* MODAL BOX */
+      .modal {
+        background: white;
+        padding: 25px;
+        width: 400px;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        position: relative;
+      }
+
+      .modal h3 {
+        margin-top: 0;
+      }
+
+      /* CLOSE BUTTON */
+      .modal .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        cursor: pointer;
+        font-size: 20px;
+        color: #555;
+      }
+
+      /* SHOW */
+      .modal-overlay.active {
+        display: flex;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <a href="{% url 'dashboard' %}">
+        <h1>Trang chủ</h1>
+      </a>
+
+      <h1>Trang quản trị</h1>
+
+      <!-- TAB BUTTONS -->
+      <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('users', this)">
+          Quản lý người dùng
+        </button>
+        <button class="tab-btn" onclick="openTab('products', this)">
+          Quản lý sản phẩm
+        </button>
+        <button class="tab-btn" onclick="openTab('categories', this)">
+          Quản lý danh mục
+        </button>
+      </div>
+
+      <!-- TAB CONTENT -->
+      <div id="users" class="tab-content active">
+        <h2>Quản lý người dùng</h2>
+        <button class="btn" onclick="openModal('userModal')">
+          Thêm người dùng
+        </button>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Password</th>
+              <th>Role</th>
+              <th>Trạng thái</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for user in users %}
+            <tr>
+              <td>{{ user.id }}</td>
+              <td>{{ user.username }}</td>
+              <td>{{ user.password }}</td>
+              <td>{{ user.role }}</td>
+
+              <td>
+                {% if user.status %}
+                <span style="color: green">Hoạt động</span>
+                {% else %}
+                <span style="color: red">Bị khóa</span>
+                {% endif %}
+              </td>
+
+              <td>
+                <!-- SỬA -->
+                <a href="#" class="btn btn-edit">Sửa</a>
+
+                <!-- KHÓA / MỞ -->
+                <a
+                  href="{% url 'toggle_user_status' user.id %}"
+                  onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản này?');"
+                  class="btn btn-lock"
+                >
+                  {% if user.status %}Khóa{% else %}Mở{% endif %}
+                </a>
+
+                <!-- XÓA -->
+                <a
+                  href="{% url 'delete_user' user.id %}"
+                  onclick="return confirm('Xóa người dùng này?');"
+                  class="btn btn-delete"
+                >
+                  Xóa
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" style="text-align: center">Chưa có người dùng</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div id="products" class="tab-content">
+        <h2>Quản lý sản phẩm</h2>
+
+        <button class="btn" onclick="openModal('productModal')">
+          Thêm sản phẩm
+        </button>
+
+        <table style="margin-top: 20px">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Ảnh</th>
+              <th>Tên sản phẩm</th>
+              <th>Danh mục</th>
+              <th>Giá</th>
+              <th>Mô tả</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for product in products %}
+            <tr>
+              <td>{{ product.product_id }}</td>
+
+              <td>
+                {% if product.image %}
+                <img src="{{ product.image.url }}" width="60" />
+                {% else %} Không có ảnh {% endif %}
+              </td>
+
+              <td>{{ product.product_name }}</td>
+              <td>{{ product.category.category_name }}</td>
+              <td>{{ product.price }}</td>
+              <td>{{ product.description }}</td>
+
+              <td>
+                <!-- SỬA -->
+                <a href="#" class="btn btn-edit">Sửa</a>
+
+                <!-- XÓA -->
+                <a
+                  href="{% url 'delete_product' product.product_id %}?tab=products"
+                  onclick="return confirm('Xóa sản phẩm này?');"
+                  class="btn btn-delete"
+                >
+                  Xóa
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" style="text-align: center">Chưa có sản phẩm</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div id="categories" class="tab-content">
+        <h2>Quản lý danh mục</h2>
+        <button class="btn" onclick="openModal('productModal')">
+          Thêm danh mục
+        </button>
+      </div>
+    </div>
+
+    <script>
+      function openTab(tabId, btn = null) {
+        // Ẩn tất cả content
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((c) => c.classList.remove("active"));
+
+        // Bỏ active tất cả button
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+
+        // Hiện tab
+        document.getElementById(tabId).classList.add("active");
+
+        // Active đúng button
+        if (btn) {
+          btn.classList.add("active");
+        }
+      }
+
+      function openModal(id) {
+        document.getElementById(id).classList.add("active");
+      }
+
+      function closeModal(event) {
+        // Click nền mờ hoặc nút X
+        if (!event || event.target.classList.contains("modal-overlay")) {
+          document
+            .querySelectorAll(".modal-overlay")
+            .forEach((m) => m.classList.remove("active"));
+        }
+      }
+    </script>
+    <!-- Thêm người dùng -->
+    <div id="userModal" class="modal-overlay" onclick="closeModal(event)">
+      <div class="modal">
+        <span class="close-btn" onclick="closeModal()">×</span>
+        <h3>Thêm người dùng</h3>
+
+        <form method="post" action="{% url 'add_user' %}">
+          {% csrf_token %}
+
+          <label>Username</label><br />
+          <input type="text" name="username" required /><br /><br />
+
+          <label>Password</label><br />
+          <input type="password" name="password" required /><br /><br />
+
+          <label>Role</label><br />
+          <select name="role" required>
+            <option value="">-- Chọn vai trò --</option>
+            <option value="ADMIN">ADMIN</option>
+            <option value="STAFF">STAFF</option>
+            <option value="USER">USER</option>
+          </select>
+          <br /><br />
+
+          <button type="submit" class="btn">Thêm</button>
+        </form>
+      </div>
+    </div>
+    <!---->
+
+    <!-- thêm sản phẩm -->
+    <div id="productModal" class="modal-overlay" onclick="closeModal(event)">
+      <div class="modal">
+        <span class="close-btn" onclick="closeModal()">×</span>
+        <h3>Thêm sản phẩm</h3>
+
+        <form>
+          <label>Tên sản phẩm</label><br />
+          <input type="text" /><br /><br />
+
+          <label>Giá</label><br />
+          <input type="number" /><br /><br />
+
+          <button class="btn">Lưu</button>
+        </form>
+      </div>
+    </div>
+    <!---->
+  </body>
+</html>

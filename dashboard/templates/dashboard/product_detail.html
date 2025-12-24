@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thông tin chi tiết</title>
+  </head>
+  <body>
+    {% load humanize %}
+    <h1>Thông tin sản phẩm vừa lấy</h1>
+    <p>Danh mục[{{product.category.category_name}}]</p>
+    <p>Tên sản phẩm [{{product.product_name}}]</p>
+    <img
+      src="{{ product.image.url }}"
+      alt="{{ product.product_name }}"
+      style="width: 100px; height: 100px"
+    />
+    <p>Giá sản phẩm[{{ product.price|floatformat:0|intcomma }} đ]</p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+  </body>
+</html>

@@ -1,0 +1,135 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trang chủ</title>
+
+    <link rel="stylesheet" href="{% static 'css/home.css' %}" />
+  </head>
+
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="header-inner">
+        <a class="logo" href="{% url 'dashboard' %}">
+          <span class="logo-badge">M</span>
+          <span>MilkStore</span>
+        </a>
+
+        <div class="search">
+          <input type="text" placeholder="Tìm sữa, bỉm, vitamin..." />
+          <span class="chip">Giao nhanh</span>
+        </div>
+
+        <div class="actions">
+          {% if not request.session.account_id %}
+          <a class="btn secondary" href="{% url 'to_login_page' %}"
+            >Đăng nhập</a
+          >
+          <a class="btn primary" href="{% url 'to_register_page' %}">Đăng kí</a>
+          {% else %} {% load humanize %}
+          <!--format tiền đẹp hơn thoi =))-->
+          {% if account.role == "ADMIN" %}
+          <a class="btn secondary" href="{% url 'to_admin_page' %}"
+            >{{account.username}} -
+            {{account.wallet.balance|floatformat:0|intcomma }} đ</a
+          >
+          {% else %}
+          <a class="btn secondary" href="{% url 'to_profile_page' %}"
+            >{{account.username}} -
+            {{account.wallet.balance|floatformat:0|intcomma }} đ</a
+          >
+          {% endif %}
+
+          <a class="cart" href="{% url 'to_view_cart' %}">
+            🛒 Giỏ hàng {% if total_cart_item and total_cart_item > 0 %}
+            <span class="badge">{{ total_cart_item }}</span>
+            {% endif %}
+          </a>
+          <a class="btn secondary" href="{% url 'logout' %}">Đăng xuất</a>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <!-- Hero -->
+      <section class="hero">
+        <div>
+          <h1>Web bán sữa chính hãng<br />giá tốt mỗi ngày</h1>
+          <p>
+            Chọn sữa phù hợp cho bé và gia đình. Ưu đãi theo combo, giao nhanh,
+            hỗ trợ đổi trả.
+          </p>
+          <div class="hero-cta">
+            <a class="btn primary" href="{% url 'to_view_cart' %}"
+              >Xem giỏ hàng</a
+            >
+            {% if not request.session.account_id %}
+            <a class="btn secondary" href="{% url 'to_login_page' %}"
+              >Đăng nhập để mua</a
+            >
+            {% endif %}
+          </div>
+        </div>
+        <div class="hero-art" aria-label="banner"></div>
+      </section>
+      {% load humanize %}
+
+      <section class="products">
+        <h2 class="section-title">🍼 Sản phẩm nổi bật</h2>
+
+        <div class="product-grid">
+          {% for product in products %}
+          
+          <div class="product-card">
+            <a href="{% url 'view_product_detail' product.product_id%}">
+            <img
+              src="{{ product.image.url }}"
+              alt="{{ product.product_name }}"
+              style="width: 100px; height: 100px"
+            />
+
+            <h3>{{ product.product_name }}</h3>
+
+            <p class="price">{{ product.price|floatformat:0|intcomma }} đ</p>
+            </a>
+            {% if request.session.account_id %}
+            <form
+              method="post"
+              action="{% url 'add_to_cart' product.product_id 1 %}"
+            >
+              {% csrf_token %}
+              <button class="btn primary">Thêm vào giỏ</button>
+            </form>
+            {% else %}
+            <a class="btn secondary" href="{% url 'to_login_page' %}">
+              Đăng nhập để mua
+            </a>
+            {% endif %}
+          </div>
+          {% empty %}
+          <p>Chưa có sản phẩm nào.</p>
+          {% endfor %}
+        </div>
+      </section>
+      <!-- Trust / info -->
+      <section class="grid">
+        <div class="card">
+          <p class="card-title">✅ Hàng chính hãng</p>
+          <p class="card-sub">Cam kết nguồn gốc rõ ràng, hạn dùng minh bạch.</p>
+        </div>
+        <div class="card">
+          <p class="card-title">🚚 Giao nhanh</p>
+          <p class="card-sub">Giao nội thành nhanh, theo dõi đơn dễ dàng.</p>
+        </div>
+        <div class="card">
+          <p class="card-title">💳 Thanh toán an toàn</p>
+          <p class="card-sub">Hỗ trợ nhiều phương thức, bảo mật thông tin.</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

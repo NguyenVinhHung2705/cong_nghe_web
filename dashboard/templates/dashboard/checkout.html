@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Checkout</title>
+
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f5f7fa;
+        margin: 0;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 60px auto;
+        background: #fff;
+        padding: 24px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        margin: 0 0 18px;
+        text-align: center;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 16px;
+      }
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 16px;
+        background: #fff;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: center;
+      }
+      th {
+        background: #4f46e5;
+        color: #fff;
+      }
+      tr:nth-child(even) {
+        background: #f9fafb;
+      }
+      .sum {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+        font-size: 18px;
+        font-weight: 800;
+      }
+      .muted {
+        color: #64748b;
+        font-size: 13px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .field input,
+      .field textarea {
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        outline: none;
+      }
+      .field input:focus,
+      .field textarea:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+      }
+      .btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        color: #fff;
+        background: #4f46e5;
+      }
+      .btn.secondary {
+        background: #64748b;
+      }
+      .btn:hover {
+        filter: brightness(0.95);
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .error {
+        color: #ef4444;
+        font-size: 13px;
+        margin-top: 6px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Xác nhận đơn hàng</h1>
+      {% load humanize %}
+
+      <div class="grid">
+        <!-- Bên trái: thông tin đơn -->
+        <div class="card">
+          <h3 style="margin: 0 0 10px">Sản phẩm bạn đã chọn</h3>
+          <div class="muted">
+            Kiểm tra lại số lượng và thành tiền trước khi đặt hàng.
+          </div>
+
+          <table style="margin-top: 12px">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tên</th>
+                <th>Giá</th>
+                <th>SL</th>
+                <th>Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td style="text-align: left">
+                  {{ item.product.product_name }}
+                </td>
+                <td>{{ item.product.price|floatformat:0|intcomma }} đ</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.subtotal|floatformat:0|intcomma }} đ</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <div class="sum">
+            <span>Tổng thanh toán</span>
+            <span>{{ total|floatformat:0|intcomma }} đ</span>
+          </div>
+
+          <div class="actions">
+            <a class="btn secondary" href="{% url 'to_view_cart' %}"
+              >← Quay lại giỏ</a
+            >
+          </div>
+        </div>
+
+        <!-- Bên phải: form giao hàng -->
+        <div class="card">
+          <h3 style="margin: 0 0 10px">Thông tin giao hàng</h3>
+          <div class="muted">Nhập đúng số điện thoại để shipper liên hệ.</div>
+
+          <form
+            method="post"
+            action="{% url 'place_order' %}"
+            id="orderForm"
+            style="margin-top: 12px"
+          >
+            {% csrf_token %}
+
+            <!-- Gửi lại danh sách item đã chọn để server tạo đơn -->
+            {% for item in items %}
+            <input type="hidden" name="selected_items" value="{{ item.id }}" />
+            {% endfor %}
+
+            <div class="field">
+              <label>Họ và tên người nhận</label>
+              <input
+                name="receiver_name"
+                placeholder="Ví dụ: Nguyễn Văn A"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label>Số điện thoại</label>
+              <input name="phone" placeholder="Ví dụ: 09xxxxxxxx" required />
+            </div>
+
+            <div class="field">
+              <label>Địa chỉ giao hàng</label>
+              <input
+                name="address"
+                placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label>Ghi chú (tuỳ chọn)</label>
+              <textarea
+                name="note"
+                rows="4"
+                placeholder="Ví dụ: Giao giờ hành chính, gọi trước khi giao..."
+              ></textarea>
+            </div>
+
+            <button class="btn" type="submit" style="width: 100%">
+              Xác nhận đặt hàng
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // validate số điện thoại basic
+      document
+        .getElementById("orderForm")
+        .addEventListener("submit", function (e) {
+          const phone = (this.phone.value || "").trim();
+          const ok = /^0\d{8,10}$/.test(phone);
+          if (!ok) {
+            e.preventDefault();
+            Swal.fire({
+              icon: "error",
+              title: "Số điện thoại chưa đúng",
+              text: "Nhập số bắt đầu bằng 0 và có 9–11 chữ số.",
+            });
+          }
+        });
+    </script>
+  </body>
+</html>
